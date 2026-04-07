@@ -1,0 +1,13 @@
+ebin/
+temp/
+
+*.beam
+*.ast
+*.stat
+*.err
+*.dump
+
+erl_crash.dump
+
+.DS_Store
+Thumbs.db

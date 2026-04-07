@@ -1,0 +1,6 @@
+% This is an -*- Erlang -*- application specification file.
+{description, "Erlang BEAM to AST decompiler for RefactorErl"}.
+{vsn, "0.9.15.04"}.
+{modSrc, ["*.erl"]}.
+{registered, []}.
+{applications, [kernel, stdlib, referl_lib]}.

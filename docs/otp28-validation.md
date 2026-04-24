@@ -13,7 +13,7 @@ The compile picture is better than in the earlier OTP 28.4.1 pass, but the repos
 
 Environment note:
 
-- on this Windows installation, the top-level `bin/erl.exe` and `bin/erlc.exe` wrappers crashed, so the compile checks were run through the working `erts-16.4/bin/erl.exe` runtime instead
+- after reinstall, the top-level OTP 28.5 wrappers are healthy again in this environment (`bin/erl.exe` and `bin/erlc.exe` both runnable)
 
 ## Historical baseline
 
@@ -76,11 +76,14 @@ The historical example
 emulator:emulate(calcpi, calc_pi, [1, true, 10]).
 ```
 
-was not cleanly re-captured in this pass because the Windows terminal harness could not return the full smoke-test output, but the last documented OTP 28 failure is still a crash through a path that reaches `hd([])` in `emulator:emulate/4`.
+was re-run in a clean OTP 28.5 pass and still fails on opcode handling:
+
+- observed issue: `case_clause` on opcode `fdiv`
+- failure site: `emulator:exec_step/1` (`src/emulator.erl`, around line 315)
 
 ### Decompiler
 
-The decompiler smoke test was also not cleanly re-captured in this pass for the same terminal-output reason. The last documented OTP 28 failure when attempting to decompile the compiled `calcpi` example was:
+The decompiler smoke test was also re-run in the same clean OTP 28.5 pass and still fails on the same opcode drift:
 
 - failure site: `decomp:decompile_step/2`
 - observed issue: `case_clause` on opcode `fdiv`

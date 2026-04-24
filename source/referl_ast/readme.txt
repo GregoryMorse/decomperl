@@ -151,3 +151,9 @@ c:c("calcpi.erl", [{outdir, "temp"}]).
 emulator:emulate(calcpi, calc_pi, [1, true, 10]).
 decomp:decompile("temp/calcpi", "temp/calcpi.erl", []).
 decomp:decompile("temp/calcpi", "temp/calcpinew.erl", [optimize,changemodname,compile,writeast,dotfile,progress]).
+
+
+recv_eval note (paper/research workflow):
+Use src/recv_eval.S as the hand-crafted assembly artifact.
+src/recv_eval.erl is the Dialyzer-oriented stub companion; OTP 28 updates only required fixing its -spec syntax.
+Equivalent runtime generation logic is in src/em.erl ('receive'/1 and 'receive'/3) using compile:forms(..., [binary, from_asm]).

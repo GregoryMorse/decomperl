@@ -24,10 +24,10 @@
 
 -export(['receive'/1, 'receive'/3]).
 
--spec 'receive'(fun(term(), (fun((M) -> M)) -> false | {true, T})) -> T.
+-spec 'receive'(fun((term(), fun((M) -> M)) -> false | {true, T})) -> T.
 'receive'(_) ->
     erlang:nif_error(stub).
 
--spec 'receive'(fun(term(), (fun((M) -> M)) -> false | {true, T}), timeout(), fun() -> T) -> T.
+-spec 'receive'(fun((term(), fun((M) -> M)) -> false | {true, T}), timeout(), fun(() -> T)) -> T.
 'receive'(_, _, _) ->
     erlang:nif_error(stub).

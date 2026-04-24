@@ -34,12 +34,12 @@ Historical support baseline:
 - `src/` is the later post-MSc codebase and should be treated as the OTP 21 baseline.
 - `source/referl_ast/` belongs with the MSc-era integration work and should also be treated as OTP 17-era code.
 
-Current validation on Erlang/OTP 28.4.1:
+Current validation on Erlang/OTP 28.5:
 
-- `src/semequiv.erl`, `src/decomp.erl`, `src/decomptest.erl`, `src/dumpbeam.erl`, `src/emulator.erl`, and `src/obfuscation.erl` compile successfully.
-- `src/compile.erl` also compiles on OTP 28 when built with the OTP compiler include directory available; its failure in a plain compile is a setup issue, not the main compatibility blocker.
-- In `source/`, all audited modules compiled on OTP 28 except `source/recv_eval.erl`, which fails because of old spec syntax.
-- Runtime compatibility is not yet fully restored on OTP 28: the old `calcpi` emulator example crashes in `emulator:emulate/3`, and decompiling the same module currently fails on opcode handling for `fdiv`.
+- `src/semequiv.erl`, `src/decomp.erl`, `src/decomptest.erl`, `src/dumpbeam.erl`, `src/emulator.erl`, and `src/obfuscation.erl` compile successfully on OTP 28.5, with warnings but no blocking errors.
+- `src/compile.erl` also compiles on OTP 28.5, but not as a plain standalone file. It now needs both the stdlib include directory for `erl_compile.hrl` and the compiler source directory for `core_parse.hrl`.
+- In `source/`, the previously failing `source/recv_eval.erl` compile blocker has been fixed by updating its legacy `-spec` syntax to the form accepted by modern OTP releases.
+- The repository is in better shape for OTP 28.5 compilation than before, but runtime compatibility is still the main unresolved area.
 
 That means the repository is historically documented as OTP 17 and OTP 21 work, but it should not yet be described as fully OTP 28 compatible.
 
@@ -61,6 +61,15 @@ c:c("src/emulator.erl", [{outdir, "ebin"}]).
 code:add_path("ebin").
 ```
 
+`src/compile.erl` needs OTP 28.5 header paths that are no longer in a single compiler include directory. In an Erlang shell, compile it with:
+
+```erlang
+StdlibInclude = code:lib_dir(stdlib, include).
+CompilerSrc = filename:join(code:lib_dir(compiler), "src").
+c:c("src/compile.erl",
+    [{i, StdlibInclude}, {i, CompilerSrc}, {outdir, "ebin"}]).
+```
+
 Example usage:
 
 ```erlang
@@ -76,6 +85,19 @@ Environment notes:
 - `OTPSOURCEPATH` is used by the newer code when traversing OTP sources.
 - `OTPCOMPTEST` is used by the RefactorERL-oriented variant.
 - `temp/` is used for generated `.erl`, `.ast`, `.stat`, `.err`, and `.dot` artifacts.
+
+## recv_eval.S Status
+
+For the paper workflow, `source/recv_eval.S` is the intended hand-crafted research artifact.
+It is a custom experiment derived from Erlang/OTP `prim_eval.S` behavior and remains valid as-is for this repository.
+
+Important distinction:
+
+- `source/recv_eval.erl` is a Dialyzer-oriented stub module.
+- the OTP 28 update in this repository only fixed its `-spec` syntax so the stub compiles again.
+- that stub compile fix is not a reason to regenerate or replace the hand-crafted `source/recv_eval.S` used for research output.
+
+Automated equivalent generation is already present in code at the end of `source/em.erl`, where `'receive'/1` and `'receive'/3` build and load `recv_eval` through `compile:forms(..., [binary, from_asm])`.
 
 ## Public-facing structure
 
@@ -103,4 +125,4 @@ Those files retain their upstream copyright and license notices. Before publishi
 
 - `docs/repository-audit.md`: recommended repository shape and merge policy.
 - `docs/refactorerl-integration.md`: how to maintain the RefactorERL-oriented variant without keeping two primary codebases in sync by hand.
-- `docs/otp28-validation.md`: spot-check results for Erlang/OTP 28.4.1.
+- `docs/otp28-validation.md`: spot-check results for Erlang/OTP 28.5.

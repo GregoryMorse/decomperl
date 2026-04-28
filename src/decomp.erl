@@ -980,6 +980,7 @@ getmemd(Graph, Where) ->
 				true -> {float,0,element(2, Where)} end;
 			list -> element(2, Where);
 			literal -> getliteral(element(2, Where));
+			tr -> getmemd(Graph, element(2, Where));
 			x -> array:get(element(2, Where) + 1-1, element(3, Graph));
 			y -> case element(2, Where) + 1 > array:size(element(4, Graph)) of true ->
 					[]; %{unresolved, Where};
@@ -5046,6 +5047,20 @@ decompile_step({InstList, AST, Graph, NodeState, LabelToNode, CurNode,
 						[getmemd(Cur, hd(element(4, Val)))]});
 					'node' -> setmemd(Cur, element(5, Val),
 						{call,0,{remote,0,{atom,0,erlang},{atom,0,'node'}},[]});
+					fadd -> setmemd(Cur, element(5, Val),
+						{op,0,'+',getmemd(Cur, hd(element(4, Val))),
+						getmemd(Cur, lists:nth(2, element(4, Val)))});
+					fsub -> setmemd(Cur, element(5, Val),
+						{op,0,'-',getmemd(Cur, hd(element(4, Val))),
+						getmemd(Cur, lists:nth(2, element(4, Val)))});
+					fmul -> setmemd(Cur, element(5, Val),
+						{op,0,'*',getmemd(Cur, hd(element(4, Val))),
+						getmemd(Cur, lists:nth(2, element(4, Val)))});
+					fdiv -> setmemd(Cur, element(5, Val),
+						{op,0,'/',getmemd(Cur, hd(element(4, Val))),
+						getmemd(Cur, lists:nth(2, element(4, Val)))});
+					fnegate -> setmemd(Cur, element(5, Val),
+						{op,0,'-',getmemd(Cur, hd(element(4, Val)))});
 					'tuple_size' -> setmemd(Cur, element(5, Val),
 						{call,0,{remote,0,{atom,0,erlang},{atom,0,'tuple_size'}},
 							[getmemd(Cur, hd(element(4, Val)))]});

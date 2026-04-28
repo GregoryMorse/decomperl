@@ -39,9 +39,9 @@ Current validation on Erlang/OTP 28.5:
 - `src/semequiv.erl`, `src/decomp.erl`, `src/decomptest.erl`, `src/dumpbeam.erl`, `src/emulator.erl`, and `src/obfuscation.erl` compile successfully on OTP 28.5, with warnings but no blocking errors.
 - `src/compile.erl` also compiles on OTP 28.5, but not as a plain standalone file. It now needs both the stdlib include directory for `erl_compile.hrl` and the compiler source directory for `core_parse.hrl`.
 - In `source/`, the previously failing `source/recv_eval.erl` compile blocker has been fixed by updating its legacy `-spec` syntax to the form accepted by modern OTP releases.
-- The repository is in better shape for OTP 28.5 compilation than before, but runtime compatibility is still the main unresolved area.
+- Runtime smoke validation for the historical `calcpi` path now passes in both emulator and decompiler after adding compatibility handling for OTP 28 float `bif` forms (`fadd`, `fsub`, `fmul`, `fdiv`, `fnegate`) and typed register wrappers (`tr`).
 
-That means the repository is historically documented as OTP 17 and OTP 21 work, but it should not yet be described as fully OTP 28 compatible.
+That means the repository is historically documented as OTP 17 and OTP 21 work, while the currently maintained workflows have been revalidated on OTP 28.5.
 
 ## Quick start
 
@@ -125,4 +125,4 @@ Those files retain their upstream copyright and license notices. Before publishi
 
 - `docs/repository-audit.md`: recommended repository shape and merge policy.
 - `docs/refactorerl-integration.md`: how to maintain the RefactorERL-oriented variant without keeping two primary codebases in sync by hand.
-- `docs/otp28-validation.md`: spot-check results for Erlang/OTP 28.5.
+- `docs/otp28-validation.md`: archived detailed OTP 28.5 validation log (optional historical record).

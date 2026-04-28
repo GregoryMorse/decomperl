@@ -123,6 +123,7 @@ getmem(State, Where) ->
 			float -> element(2, Where);
 			list -> element(2, Where);
 			literal -> element(2, Where);
+			tr -> getmem(State, element(2, Where));
 			x -> lists:nth(element(2, Where) + 1, element(2, State));
 			y -> lists:nth(element(2, Where) + 1, element(3, State));
 			fr -> lists:nth(element(2, Where) + 1, element(4, State));
@@ -346,7 +347,12 @@ exec_step(State) ->
 				element -> exec_step(setelement(1, setmem(State, element(5, Val), element(getmem(State, hd(element(4, Val))), getmem(State, lists:nth(2, element(4, Val))))), tl(RemainingCode)));
 				hd -> exec_step(setelement(1, setmem(State, element(5, Val), hd(getmem(State, hd(element(4, Val))))), tl(RemainingCode)));
 				tl -> exec_step(setelement(1, setmem(State, element(5, Val), tl(getmem(State, hd(element(4, Val))))), tl(RemainingCode)));
-				self -> exec_step(setelement(1, setmem(State, element(5, Val), self()), tl(RemainingCode)))
+				self -> exec_step(setelement(1, setmem(State, element(5, Val), self()), tl(RemainingCode)));
+				fadd -> exec_step(setelement(1, setmem(State, element(5, Val), getmem(State, hd(element(4, Val))) + getmem(State, lists:nth(2, element(4, Val)))), tl(RemainingCode)));
+				fsub -> exec_step(setelement(1, setmem(State, element(5, Val), getmem(State, hd(element(4, Val))) - getmem(State, lists:nth(2, element(4, Val)))), tl(RemainingCode)));
+				fmul -> exec_step(setelement(1, setmem(State, element(5, Val), getmem(State, hd(element(4, Val))) * getmem(State, lists:nth(2, element(4, Val)))), tl(RemainingCode)));
+				fdiv -> exec_step(setelement(1, setmem(State, element(5, Val), getmem(State, hd(element(4, Val))) / getmem(State, lists:nth(2, element(4, Val)))), tl(RemainingCode)));
+				fnegate -> exec_step(setelement(1, setmem(State, element(5, Val), -(getmem(State, hd(element(4, Val))))), tl(RemainingCode)))
 			end;
 			gc_bif -> case element(2, Val) of
 				'+' -> exec_step(setelement(1, setmem(State, element(6, Val), getmem(State, hd(element(5, Val))) + if length(element(5, Val)) =:= 1 -> 0; true -> getmem(State, lists:nth(2, element(5, Val))) end), tl(RemainingCode)));

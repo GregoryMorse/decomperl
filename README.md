@@ -1,53 +1,46 @@
 # Decomperl
 
-Decomperl is an experimental Erlang BEAM decompiler and emulator project developed from MSc thesis work and continued afterward with newer cleanup, decompilation, and obfuscation experiments.
+Decomperl is a research-oriented Erlang/BEAM decompiler and emulator project originating from MSc thesis work and extended with later experimentation.
 
-The repository currently contains three historical layers:
+## Highlights
 
-- `src/`: the newer working codebase and the best starting point for further development.
-- `source/`: the MSc-era source tree, including extra examples, experiments, and the original notes.
-- `source/referl_ast/`: a RefactorERL-oriented variant with integration-specific edits and build metadata.
+- Decompilation from BEAM bytecode to Erlang source.
+- AST generation and pretty-printing workflows.
+- Semantic-equivalence support utilities.
+- Emulator-assisted BEAM experimentation.
+- Control-flow visualization and statistics collection.
+- Obfuscation and assembly manipulation experiments.
 
-## What is here
+## Repository layout
 
-- A BEAM decompiler in `src/decomp.erl` with AST output, pretty-printing, statistics generation, and graph export options.
-- An emulator in `src/emulator.erl` for experimenting with BEAM-level behavior.
-- A large regression and feature test corpus in `src/decomptest.erl`.
-- Obfuscation and BEAM assembly experiments in `src/obfuscation.erl`, `src/obfusc.S`, and `src/handasm.S`.
-- Thesis-era example modules such as `calcpi`, `trycatch`, `undecidable`, and `recv_eval` under `source/`.
+- `src/`: actively maintained implementation and primary entry point.
+- `source/`: historical MSc-era tree with additional examples and artifacts.
+- `source/referl_ast/`: RefactorERL-oriented variant with integration-specific changes.
 
-## Repository status
+Key modules:
 
-This repository has not yet been normalized into a single publishable source layout. The current recommendation is:
-
-- Treat `src/` as the canonical codebase.
-- Keep `source/` as a historical archive of the MSc version.
-- Treat `source/referl_ast/` as a derived integration target, not as a second primary source tree.
-
-The detailed audit and merge recommendation are in `docs/repository-audit.md`.
+- `src/decomp.erl`: decompiler core.
+- `src/emulator.erl`: emulator runtime.
+- `src/decomptest.erl`: regression and feature test corpus.
+- `src/obfuscation.erl`, `src/obfusc.S`, `src/handasm.S`: obfuscation and BEAM assembly experiments.
 
 ## Compatibility
 
-Historical support baseline:
+Historical baselines:
 
-- `source/` is the MSc-era codebase and should be treated as the OTP 17 baseline.
-- `src/` is the later post-MSc codebase and should be treated as the OTP 21 baseline.
-- `source/referl_ast/` belongs with the MSc-era integration work and should also be treated as OTP 17-era code.
+- `source/` and `source/referl_ast/`: OTP 17 era.
+- `src/`: OTP 21 era.
 
-Current validation on Erlang/OTP 28.5:
+Recent validation (Erlang/OTP 28.5):
 
-- `src/semequiv.erl`, `src/decomp.erl`, `src/decomptest.erl`, `src/dumpbeam.erl`, `src/emulator.erl`, and `src/obfuscation.erl` compile successfully on OTP 28.5, with warnings but no blocking errors.
-- `src/compile.erl` also compiles on OTP 28.5, but not as a plain standalone file. It now needs both the stdlib include directory for `erl_compile.hrl` and the compiler source directory for `core_parse.hrl`.
-- In `source/`, the previously failing `source/recv_eval.erl` compile blocker has been fixed by updating its legacy `-spec` syntax to the form accepted by modern OTP releases.
-- Runtime smoke validation for the historical `calcpi` path now passes in both emulator and decompiler after adding compatibility handling for OTP 28 float `bif` forms (`fadd`, `fsub`, `fmul`, `fdiv`, `fnegate`) and typed register wrappers (`tr`).
-
-That means the repository is historically documented as OTP 17 and OTP 21 work, while the currently maintained workflows have been revalidated on OTP 28.5.
+- `src/semequiv.erl`, `src/decomp.erl`, `src/decomptest.erl`, `src/dumpbeam.erl`, `src/emulator.erl`, and `src/obfuscation.erl` compile successfully (warnings only).
+- `src/compile.erl` also compiles on OTP 28.5 when both stdlib and compiler source include paths are provided.
+- `source/recv_eval.erl` was updated to modern `-spec` syntax and now compiles on current OTP.
+- Historical `calcpi` smoke runs pass for both emulator and decompiler after OTP 28 compatibility handling for float `bif` forms (`fadd`, `fsub`, `fmul`, `fdiv`, `fnegate`) and typed register wrappers (`tr`).
 
 ## Quick start
 
-This codebase assumes a local Erlang/OTP installation and some workflows also assume an unpacked OTP source tree for compiler tests.
-
-Typical interactive setup from an Erlang shell:
+From an Erlang shell:
 
 ```erlang
 filelib:ensure_dir("ebin/").
@@ -61,7 +54,7 @@ c:c("src/emulator.erl", [{outdir, "ebin"}]).
 code:add_path("ebin").
 ```
 
-`src/compile.erl` needs OTP 28.5 header paths that are no longer in a single compiler include directory. In an Erlang shell, compile it with:
+Compile `src/compile.erl` on OTP 28.5:
 
 ```erlang
 StdlibInclude = code:lib_dir(stdlib, include).
@@ -70,7 +63,7 @@ c:c("src/compile.erl",
     [{i, StdlibInclude}, {i, CompilerSrc}, {outdir, "ebin"}]).
 ```
 
-Example usage:
+Example workflow:
 
 ```erlang
 c:c("source/calcpi.erl", [{outdir, "temp"}]).
@@ -82,47 +75,31 @@ decomp:decompile("temp/calcpi", "temp/calcpinew.erl",
 
 Environment notes:
 
-- `OTPSOURCEPATH` is used by the newer code when traversing OTP sources.
-- `OTPCOMPTEST` is used by the RefactorERL-oriented variant.
-- `temp/` is used for generated `.erl`, `.ast`, `.stat`, `.err`, and `.dot` artifacts.
+- `OTPSOURCEPATH`: used by newer code when traversing OTP sources.
+- `OTPCOMPTEST`: used by the RefactorERL-oriented variant.
+- `temp/`: output directory for generated `.erl`, `.ast`, `.stat`, `.err`, and `.dot` artifacts.
 
-## recv_eval.S Status
+## Research artifact note: recv_eval.S
 
-For the paper workflow, `source/recv_eval.S` is the intended hand-crafted research artifact.
-It is a custom experiment derived from Erlang/OTP `prim_eval.S` behavior and remains valid as-is for this repository.
-
-Important distinction:
+`source/recv_eval.S` is a hand-crafted artifact used in the paper workflow, derived from Erlang/OTP `prim_eval.S` behavior.
 
 - `source/recv_eval.erl` is a Dialyzer-oriented stub module.
-- the OTP 28 update in this repository only fixed its `-spec` syntax so the stub compiles again.
-- that stub compile fix is not a reason to regenerate or replace the hand-crafted `source/recv_eval.S` used for research output.
+- The OTP 28 update in this repository only modernized that stub's `-spec` syntax for compilation compatibility.
+- That compatibility update does not replace the role of the hand-crafted `source/recv_eval.S` artifact.
 
-Automated equivalent generation is already present in code at the end of `source/em.erl`, where `'receive'/1` and `'receive'/3` build and load `recv_eval` through `compile:forms(..., [binary, from_asm])`.
+Automated equivalent generation is present at the end of `source/em.erl`, where `'receive'/1` and `'receive'/3` construct and load `recv_eval` via `compile:forms(..., [binary, from_asm])`.
 
-## Public-facing structure
+## Documentation
 
-If you publish this repository as-is, present it as a research prototype with preserved historical context, not as a polished library.
+- `docs/refactorerl-integration.md`: maintenance model for the RefactorERL variant.
+- `docs/otp28-validation.md`: detailed OTP 28.5 validation notes.
 
-Good showcase points:
+## Provenance and licensing
 
-- decompilation from BEAM to Erlang source and AST
-- semantic-equivalence support utilities
-- emulator-assisted experimentation
-- control-flow visualization and statistics collection
-- later obfuscation and assembly manipulation experiments
-
-## Provenance and licensing notes
-
-This repository includes or adapts files derived from Erlang/OTP, including at least:
+This repository includes or adapts files derived from Erlang/OTP, including:
 
 - `src/compile.erl`
 - `source/recv_eval.erl`
 - `source/referl_ast/src/recv_eval.erl`
 
-Those files retain their upstream copyright and license notices. Before publishing publicly, add a top-level license decision for your own code and keep upstream notices intact for OTP-derived files.
-
-## Additional documentation
-
-- `docs/repository-audit.md`: recommended repository shape and merge policy.
-- `docs/refactorerl-integration.md`: how to maintain the RefactorERL-oriented variant without keeping two primary codebases in sync by hand.
-- `docs/otp28-validation.md`: archived detailed OTP 28.5 validation log (optional historical record).
+Upstream copyright and license notices for OTP-derived files are preserved.

@@ -1,70 +1,61 @@
-# RefactorERL Integration Procedure
+# RefactorERL Integration Notes
 
-## Goal
+This document summarizes how RefactorERL-related support appears in this repository and how the historical integration tree relates to the main codebase.
 
-Maintain one primary implementation tree and regenerate the RefactorERL-oriented variant intentionally, instead of hand-maintaining two diverging copies.
+## Current model
 
-## Recommended source of truth
+- `src/` is the canonical implementation for decompiler and emulator work.
+- `source/referl_ast/` is a historical integration snapshot preserved for reference.
 
-Use `src/` as the source of truth for the decompiler and emulator code.
+The repository keeps one primary implementation tree and retains the RefactorERL variant as historical context rather than a second actively synchronized codebase.
 
-The existing `source/referl_ast/` tree should be treated as a historical integration snapshot that documents what was needed for RefactorERL at the time.
+## Historical integration assets
 
-## Inputs to preserve from the historical variant
-
-Keep these files as integration metadata or references:
+Integration metadata and packaging references:
 
 - `source/referl_ast/build.rules`
 - `source/referl_ast/src/referl_ast.appspec`
 - `source/referl_ast/src/selfmod.erl`
 - `source/referl_ast/readme.txt`
 
-Use these files as references for integration-specific edits:
+Integration-delta reference modules:
 
 - `source/referl_ast/src/decomp.erl`
 - `source/referl_ast/src/semequiv.erl`
 - `source/referl_ast/src/em.erl`
 - `source/referl_ast/src/recv_eval.erl`
 
-## Reconstruction procedure
+## RefactorERL-specific deltas
 
-1. Start from the current core modules in `src/`.
-2. Copy only the modules required for RefactorERL integration into a fresh integration working tree.
-3. Reapply the historical RefactorERL-specific edits selectively.
-4. Keep the integration metadata local to the RefactorERL tree rather than back-porting it into the main repository.
+### AST access hook
 
-## Known RefactorERL-specific concerns
+The RefactorERL variant exposes `get_ast_self/0` in `semequiv.erl` and imports it in `decomp.erl`, enabling decompiler flows over AST forms provided by the integration environment.
 
-### 1. AST access hook
+### Directory-level decompilation helpers
 
-The RefactorERL variant exposes `get_ast_self/0` in `semequiv.erl` and imports it in `decomp.erl` so the decompiler can work with AST forms loaded from the integration environment.
+The historical variant includes `decomp_dir/4` and related helpers for directory-oriented processing.
 
-### 2. Directory-level decompilation
+### Environment and path handling
 
-The RefactorERL variant includes `decomp_dir/4` and related convenience flows for processing directory trees.
+The integration path moved away from hard-coded paths toward environment-driven values such as `OTPCOMPTEST` and `code:root_dir()`.
 
-### 3. Environment-path differences
+### Packaging metadata
 
-The historical variant switched from hard-coded Windows paths to environment-driven paths such as `OTPCOMPTEST` and `code:root_dir()`.
+`build.rules` and `referl_ast.appspec` are integration packaging assets and are not part of the general Decomperl source surface.
 
-### 4. RefactorERL build metadata
+## Regeneration outline
 
-`build.rules` and `referl_ast.appspec` are integration packaging files, not general Decomperl source files.
+When integration refresh is needed, the observed workflow is:
 
-## Minimal practical approach
+1. Start from modules in `src/`.
+2. Select only modules required for integration.
+3. Reapply the minimal RefactorERL-specific deltas.
+4. Keep integration packaging metadata local to the integration tree.
 
-If you want a low-maintenance setup, do this:
+## Maintenance direction
 
-1. Keep the main repository focused on `src/` and thesis/archive material.
-2. Keep `source/referl_ast/` as documentation of the old integration shape.
-3. When you need to revive the RefactorERL integration, create a fresh branch or working copy and replay only the necessary integration edits.
+For active long-term maintenance, one of these approaches reduces drift more effectively than two fully duplicated trees:
 
-## Optional future improvement
-
-If you expect to maintain the integration actively, replace the duplicated directory with one of these approaches:
-
-- a small patch set against the canonical `src/` modules
-- a scripted export step that assembles the RefactorERL variant
-- a dedicated integration branch with narrowly scoped commits
-
-Any of those is easier to maintain than two full source trees that drift independently.
+- A small patch stack over canonical `src/` modules.
+- A scripted export step that assembles the integration variant.
+- A dedicated integration branch with narrowly scoped commits.

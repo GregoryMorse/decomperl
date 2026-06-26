@@ -1,5 +1,9 @@
 %c("semequiv.erl", [debug_info,{outdir, "temp"}]).
 -module(semequiv).
+-compile({nowarn_unused_function,
+  [{gen_arglist,0},{get_state,2},{set_state,3},{get_map_elements,3},
+   {put_map_exact,3},{put_map_assoc,3},{test,4},{test,3},{trytocatch,3},
+   {lcorig,3},{lc,3},{fcorig,2},{fc,5}]}).
 
 -export([get_ast_self/0, test_sem_equiv/0, has_float/3, get_float/3, has_utf8/1,
   get_utf8_size/1, get_utf16_size/2, fun_arglist/2,
@@ -4202,12 +4206,14 @@ has_utf8(Binary) ->
   Bits >= 24 andalso ((TB = hd(binary_to_list(binary_part(Binary, 2, 1))))
     band 16#c0) =:= 16#80 andalso (FB >= 16#e0 andalso FB =< 16#ef andalso
     (FB =/= 16#e0 orelse SB >= 16#a0) andalso
-    ((Result = ((((FB bsl 6) bor SB) bsl 6) bor TB) - 16#e2080)
+    ((Result = ((FB band 16#0f) bsl 12) bor
+      ((SB band 16#3f) bsl 6) bor (TB band 16#3f))
       =< 16#d7ff orelse Result >= 16#e000) orelse
   FB >= 16#f0 andalso FB =< 16#f7 andalso Bits >= 32 andalso
     ((HB = hd(binary_to_list(binary_part(Binary, 3, 1)))) band 16#c0)
       =:= 16#80 andalso (FB =/= 16#f0 orelse SB >= 16#90) andalso
-    (((((((FB bsl 6) bor SB) bsl 6) bor TB) bsl 6) bor HB) - 16#3c82080)
+    (((FB band 16#07) bsl 18) bor ((SB band 16#3f) bsl 12) bor
+      ((TB band 16#3f) bsl 6) bor (HB band 16#3f))
       =< 16#10ffff))).
 get_utf8_size(Binary) ->
   FB = hd(binary_to_list(binary_part(Binary, 0, 1))),
@@ -4218,13 +4224,16 @@ get_utf8(Binary) ->
   FB = hd(binary_to_list(binary_part(Binary, 0, 1))),
   if FB =< 16#7f -> FB;
   FB >= 16#c2 andalso FB =< 16#df ->
-    ((FB bsl 6) bor hd(binary_to_list(binary_part(Binary, 1, 1)))) - 16#3080;
+    ((FB band 16#1f) bsl 6) bor
+      (hd(binary_to_list(binary_part(Binary, 1, 1))) band 16#3f);
   FB >= 16#e0 andalso FB =< 16#ef -> [L1, L2] =
     binary_to_list(binary_part(Binary, 1, 2)),
-      ((((FB bsl 6) bor L1) bsl 6) bor L2) - 16#e2080;
+      ((FB band 16#0f) bsl 12) bor ((L1 band 16#3f) bsl 6) bor
+        (L2 band 16#3f);
   FB >= 16#f0 andalso FB =< 16#f7 -> [L1, L2, L3] =
     binary_to_list(binary_part(Binary, 1, 3)),
-      ((((((FB bsl 6) bor L1) bsl 6) bor L2) bsl 6) bor L3) - 16#3c82080 end.
+      ((FB band 16#07) bsl 18) bor ((L1 band 16#3f) bsl 12) bor
+        ((L2 band 16#3f) bsl 6) bor (L3 band 16#3f) end.
 has_utf16(Binary, IsLittle) ->
   (Bits = bit_size(Binary)) >= 16 andalso
   ((FW = hd(binary_to_list(binary_part(Binary,
@@ -4619,15 +4628,11 @@ trytocatch(TryFun, TryCaseFun, CatchCaseFun) ->
 %{is_atom,is_atom,is_integer >= 0 =< 255,
 % [{file,is_list of is_integer},{line,is_integer}]}
 %format may vary in eval module or for remote, etc...
-  case catch TryFun of
-  {'EXIT',{Reason,StackTrace}} when is_list(StackTrace) ->
-    CatchCaseFun(error, Reason, StackTrace);
-    %OTP21 has made this further unequal by deprecating erlang:get_stacktrace
-    %for the new try-catch _:_:Stacktrace format
-    %this form only occurs when exit which returns no value specifically called
-    %whereas error gives a stacktrace as per above
-  {'EXIT',Term} -> CatchCaseFun(exit, Term, erlang:get_stacktrace());
-  Success -> TryCaseFun(Success)
+  try TryFun() of Success -> TryCaseFun(Success)
+  catch
+  throw:Term -> TryCaseFun(Term);
+  error:Reason:StackTrace -> CatchCaseFun(error, Reason, StackTrace);
+  exit:Term:StackTrace -> CatchCaseFun(exit, Term, StackTrace)
 end.
 
 'receive'(Fr) -> 

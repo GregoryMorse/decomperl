@@ -93,6 +93,7 @@ Automated equivalent generation is present at the end of `source/em.erl`, where 
 
 - `docs/refactorerl-integration.md`: maintenance model for the RefactorERL variant.
 - `docs/otp28-validation.md`: detailed OTP 28.5 validation notes.
+- `docs/ew2026-validation.md`: reproducibility validation for `src/EW2026Examples.erl`.
 
 ## Provenance and licensing
 

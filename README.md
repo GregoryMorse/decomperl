@@ -95,6 +95,13 @@ Automated equivalent generation is present at the end of `source/em.erl`, where 
 - `docs/otp28-validation.md`: detailed OTP 28.5 validation notes.
 - `docs/ew2026-validation.md`: reproducibility validation for `src/EW2026Examples.erl`.
 
+## Erlang Workshop 2026 supplement
+
+- `README_EW2026.md`: code-supplement README packaged as `README.md` inside
+  the submission archive.
+- `scripts/build_ew2026_supplement.py`: builds `dist/ew2026-code-supplement.zip`
+  containing the EW2026 reproducibility files.
+
 ## Provenance and licensing
 
 This repository includes or adapts files derived from Erlang/OTP, including:

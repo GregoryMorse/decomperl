@@ -8,10 +8,12 @@
 %%
 %% Compile and run on an OTP installation with:
 %%
-%%     erlc src/EW2026Examples.erl
-%%     erl -noshell -pa . -pa temp -s EW2026Examples main -s init stop
+%%     erlc +debug_info -o temp src/semequiv.erl
+%%     erlc -o ebin src/EW2026Examples.erl
+%%     erl -noshell -pz ebin -pz temp -s EW2026Examples main -s init stop
 
 -module('EW2026Examples').
+-compile(nowarn_deprecated_catch).
 -export([all/0, main/0, main/1, run/0]).
 
 main() -> main([]).
@@ -118,10 +120,14 @@ load_semequiv_binary(Binary) ->
 
 ensure_otp_compiler() ->
     Cwd = filename:absname("."),
+    OtpCompilerEbin = filename:absname(filename:join(code:lib_dir(compiler), "ebin")),
     lists:foreach(fun(Path) ->
-        case filename:absname(Path) of
-            Cwd -> code:del_path(Path);
-            _ -> ok
+        AbsPath = filename:absname(Path),
+        case AbsPath =:= Cwd orelse
+             (AbsPath =/= OtpCompilerEbin andalso
+              filelib:is_file(filename:join(AbsPath, "compile.beam"))) of
+            true -> code:del_path(Path);
+            false -> ok
         end
     end, code:get_path()),
     code:purge(compile),

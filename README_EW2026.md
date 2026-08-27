@@ -28,12 +28,12 @@ with executable validation examples for the workshop version.
 
 ## Requirements
 
-- Erlang/OTP 28 or later is recommended for reproducing the reported
+- Erlang/OTP 29.0.5 or later is recommended for reproducing the reported
   validation run.
 - Python 3 is required only if rebuilding the supplement zip from the repository.
 
-The validation was performed on Windows with Erlang/OTP 28 and ERTS 16.4. The
-commands below use generic executable names; on Windows, replace `erlc` and
+The validation was performed on Windows with Erlang/OTP 29.0.5 and ERTS 17.0.5.
+The commands below use generic executable names; on Windows, replace `erlc` and
 `erl` with the full path to the Erlang installation if they are not on `PATH`.
 
 ## Quick Validation
@@ -42,9 +42,10 @@ From the root of the extracted supplement:
 
 ```sh
 mkdir -p temp
+mkdir -p ebin
 erlc +debug_info -o temp src/semequiv.erl
-erlc src/EW2026Examples.erl
-erl -noshell -pa . -pa temp -s EW2026Examples main -s init stop
+erlc -o ebin src/EW2026Examples.erl
+erl -noshell -pz ebin -pz temp -s EW2026Examples main -s init stop
 ```
 
 Expected result:
@@ -68,7 +69,7 @@ The original corpus can also be checked directly after compiling
 `src/semequiv.erl`:
 
 ```sh
-erl -noshell -pa temp -eval "Result = semequiv:test_sem_equiv(), io:format('~p~n', [Result]), halt()."
+erl -noshell -pz temp -eval "Result = semequiv:test_sem_equiv(), io:format('~p~n', [Result]), halt()."
 ```
 
 Expected result:

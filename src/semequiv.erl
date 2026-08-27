@@ -4,6 +4,7 @@
   [{gen_arglist,0},{get_state,2},{set_state,3},{get_map_elements,3},
    {put_map_exact,3},{put_map_assoc,3},{test,4},{test,3},{trytocatch,3},
    {lcorig,3},{lc,3},{fcorig,2},{fc,5}]}).
+-compile(nowarn_export_var_subexpr).
 
 -export([get_ast_self/0, test_sem_equiv/0, has_float/3, get_float/3, has_utf8/1,
   get_utf8_size/1, get_utf16_size/2, fun_arglist/2,

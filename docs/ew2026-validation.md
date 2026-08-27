@@ -6,12 +6,12 @@ semantic-equivalence helper corpus remains in `src/semequiv.erl`.
 
 ## Environment
 
-- Validated on Windows with Erlang/OTP 28, ERTS 16.4.
+- Validated on Windows with Erlang/OTP 29.0.5, ERTS 17.0.5.
 - `src/semequiv.erl` compiles warning-clean on this OTP after the UTF-8 helper
-  fix and scoped historical-helper warning attributes.
-- The repository root contains historical `compile.beam` artifacts. The example
-  module removes the current directory from the Erlang code path before dynamic
-  compiler calls so the installed OTP compiler is used.
+  fix and scoped warning attributes for historical helper code.
+- Historical build output includes a project `compile.beam`. The example module
+  removes non-OTP paths containing `compile.beam` from the Erlang code path
+  before dynamic compiler calls so the installed OTP compiler is used.
 
 ## Commands
 
@@ -19,8 +19,8 @@ From the repository root:
 
 ```powershell
 & 'C:\Program Files\Erlang OTP\bin\erlc.exe' +debug_info -o temp src\semequiv.erl
-& 'C:\Program Files\Erlang OTP\bin\erlc.exe' src\EW2026Examples.erl
-& 'C:\Program Files\Erlang OTP\bin\erl.exe' -noshell -pa . -pa temp -s EW2026Examples main -s init stop
+& 'C:\Program Files\Erlang OTP\bin\erlc.exe' -o ebin src\EW2026Examples.erl
+& 'C:\Program Files\Erlang OTP\bin\erl.exe' -noshell -pz ebin -pz temp -s EW2026Examples main -s init stop
 ```
 
 The `-s EW2026Examples main` form avoids shell quoting issues around the quoted

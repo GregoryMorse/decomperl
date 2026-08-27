@@ -101,6 +101,8 @@ Automated equivalent generation is present at the end of `source/em.erl`, where 
   the submission archive.
 - `scripts/build_ew2026_supplement.py`: builds `dist/ew2026-code-supplement.zip`
   containing the EW2026 reproducibility files.
+- The EW2026 supplement has been validated on Erlang/OTP 29.0.5 with outputs in
+  `ebin/` and project code paths appended after OTP libraries.
 
 ## Provenance and licensing
 
